@@ -6,6 +6,8 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
@@ -16,14 +18,17 @@ import android.widget.TextView;
 import java.util.ArrayList;
 import java.util.List;
 
+import edu.csusb.cse.employeemanager.adapters.RecyclerAdapter;
+
 public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = "DEBUG";
     private static String dialogText;
 
-    private List<String> dataList = new ArrayList<>();
-
     final Context context = this;
+
+    private RecyclerView recyclerView;
+    private List<String> dataList = new ArrayList<>();
 
 
     @Override
@@ -33,13 +38,21 @@ public class MainActivity extends AppCompatActivity {
 
         FloatingActionButton fab = findViewById(R.id.fab);
 
+        initRecyclerView();
+
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 showPrompt();
-                Snackbar.make(v, "Clicked", Snackbar.LENGTH_SHORT).show();
             }
         });
+    }
+
+    public void initRecyclerView(){
+        recyclerView = findViewById(R.id.recycler_view);
+        RecyclerAdapter adapter =  new RecyclerAdapter(MainActivity.this, dataList);
+        recyclerView.setAdapter(adapter);
+        recyclerView.setLayoutManager(new LinearLayoutManager(MainActivity.this));
     }
 
     public void showPrompt(){
@@ -61,6 +74,7 @@ public class MainActivity extends AppCompatActivity {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
                                 dialogText = userInput.getText().toString();
+                                dataList.add(dialogText);
                             }
                         })
                 .setNegativeButton("Cancel",
