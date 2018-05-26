@@ -34,7 +34,7 @@ import edu.csusb.cse.employeemanager.httprequests.PostURLContentTask;
 public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = "DEBUG";
-    private static final String SERVER = "https://6379b90c.ngrok.io";
+    private static final String SERVER = "http://10.0.2.2:5000";
     private static String dialogText;
 
     StringParser stringParser = new StringParser();

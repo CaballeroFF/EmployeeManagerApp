@@ -78,15 +78,34 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.ViewHo
         holder.trash.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                String deleteResponse = new HttpRequests()
-                        .httpDeleteRequest(stringParser
-                        .employeeToJSON(stringParser
-                        .formattedEmployee(dataList.get(position))), SERVER);
+                //Are you sure you want to delete
+                DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        switch (which){
+                            case DialogInterface.BUTTON_POSITIVE:
+                                String deleteResponse = new HttpRequests()
+                                        .httpDeleteRequest(stringParser
+                                                .employeeToJSON(stringParser
+                                                        .formattedEmployee(dataList.get(position))), SERVER);
 
-                Log.d(TAG, "TESTING DELETE: line 77 " + deleteResponse);
-                dataList.remove(position);
-                notifyItemRemoved(position);
-                notifyItemRangeChanged(position, dataList.size());
+                                Log.d(TAG, "TESTING DELETE: line 77 " + deleteResponse);
+                                dataList.remove(position);
+                                notifyItemRemoved(position);
+                                notifyItemRangeChanged(position, dataList.size());
+                                break;
+
+                            case DialogInterface.BUTTON_NEGATIVE:
+                                //No button clicked
+                                break;
+                        }
+                    }
+                };
+
+                //build the are you sure delete dialog
+                AlertDialog.Builder builder = new AlertDialog.Builder(context);
+                builder.setMessage("Are you sure you want to delete this employee?").setPositiveButton("Yes", dialogClickListener)
+                        .setNegativeButton("No", dialogClickListener).show();
             }
         });
 
