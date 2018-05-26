@@ -9,6 +9,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
@@ -19,36 +20,43 @@ public class DeleteURLContentTask extends AsyncTask<String, Integer, String> {
 @Override
 protected String doInBackground(String... strings) {
 
-        String id = strings[1];
+        String post;
+        int code = -1;
 
         StringBuilder temp = new StringBuilder();
-        HttpURLConnection connection = null;
 
-        String delUrl = Uri.parse(strings[0])
-                .buildUpon()
-                .appendPath("employee")
-                .appendPath(id)
-                .build().toString();
-        Log.d(TAG, "doInBackground: " + delUrl);
+        try{
+                post = strings[1];
+                String addurl = Uri.parse(strings[0])
+                        .buildUpon()
+                        .appendPath("employee")
+                        .build().toString();
+                URL url = new URL(addurl);
+                HttpURLConnection request = (HttpURLConnection) url.openConnection();
 
-        try {
-        URL url = new URL(delUrl);
-        connection = (HttpURLConnection)url.openConnection();
-        connection.setRequestMethod("DELETE");
+                request.setRequestMethod("DELETE");
+                request.addRequestProperty("Content-Length", Integer.toString(post.length()));
+                request.addRequestProperty("Content-Type", "application/x-www-form-urlencoded");
+                request.setDoOutput(true);
+                request.connect();
 
-        InputStream in = new BufferedInputStream(connection.getInputStream());
-        BufferedReader reader = new BufferedReader(new InputStreamReader(in));
-        String line;
-        while ((line = reader.readLine())!= null){
-        temp.append(line).append('\n');
-        }
+                OutputStreamWriter writer = new OutputStreamWriter(request.getOutputStream());
+                writer.write(post);
+                writer.flush();
+                writer.close();
+
+                BufferedReader reader = new BufferedReader(new InputStreamReader(request.getInputStream()));
+                String line;
+
+                while((line = reader.readLine()) != null){
+                        temp.append(line);
+                }
+
+                code = request.getResponseCode();
+
+                request.disconnect();
         } catch (IOException e){
-        e.printStackTrace();
-        }
-        finally {
-        if (connection != null) {
-        connection.disconnect();
-        }
+                e.printStackTrace();
         }
         return temp.toString();
         }

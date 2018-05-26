@@ -25,6 +25,8 @@ import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 import edu.csusb.cse.employeemanager.adapters.RecyclerAdapter;
+import edu.csusb.cse.employeemanager.helpers.StringParser;
+import edu.csusb.cse.employeemanager.httprequests.DeleteURLContentTask;
 import edu.csusb.cse.employeemanager.httprequests.GetURLContentTask;
 import edu.csusb.cse.employeemanager.httprequests.PostURLContentTask;
 
@@ -48,20 +50,22 @@ public class MainActivity extends AppCompatActivity {
 
         FloatingActionButton fab = findViewById(R.id.fab);
 
-        updateList(getEmployeesFromJSON(httpGetRequest()));
+        updateList(new StringParser().getEmployeesFromJSON(httpGetRequest()));
         initRecyclerView();
 
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 showPrompt();
+//                String test = httpDeleteRequest(employeeToJSON("Andy,001,CSE,Professor"));
+//                Log.d(TAG, "onClick: " + test);
             }
         });
     }
 
     public void initRecyclerView(){
         recyclerView = findViewById(R.id.recycler_view);
-        adapter =  new RecyclerAdapter(MainActivity.this, dataList);
+        adapter =  new RecyclerAdapter(MainActivity.this, dataList, SERVER);
         recyclerView.setAdapter(adapter);
         recyclerView.setLayoutManager(new LinearLayoutManager(MainActivity.this));
     }
@@ -111,10 +115,10 @@ public class MainActivity extends AppCompatActivity {
                                     userInputDepartment.getText().toString() + "," +
                                     userInputTitle.getText().toString();
 
-                            String returned = httpPOSTRequest(employeeToJSON(dialogText));
-                            Log.d(TAG, "onClick: " + returned);
+                            String returned = httpPostRequest(new StringParser().employeeToJSON(dialogText));
+                            Log.d(TAG, "onClick: line 115 " + returned);
                             //refresh
-                            updateList(getEmployeesFromJSON(httpGetRequest()));
+                            updateList(new StringParser().getEmployeesFromJSON(httpGetRequest()));
                             adapter.notifyDataSetChanged();
 
                             dialog.dismiss();
@@ -125,22 +129,6 @@ public class MainActivity extends AppCompatActivity {
         });
         //show alert dialog
         dialog.show();
-    }
-
-    public String employeeToJSON(String employee){
-
-        String[] employeeArray = employee.split(",");
-
-        JSONObject jsonEmployee = new JSONObject();
-        try {
-            jsonEmployee.put("name",employeeArray[0]);
-            jsonEmployee.put("id",employeeArray[1]);
-            jsonEmployee.put("department",employeeArray[2]);
-            jsonEmployee.put("title",employeeArray[3]);
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-        return jsonEmployee.toString();
     }
 
     public String httpGetRequest(){
@@ -155,8 +143,8 @@ public class MainActivity extends AppCompatActivity {
         return employees;
     }
 
-    public String httpPOSTRequest(String json){
-        Log.d(TAG, "httpPOSTRequest: " + json);
+    public String httpPostRequest(String json){
+        Log.d(TAG, "httpPOSTRequest: line 159 " + json);
 
         String returnMessage = null;
         PostURLContentTask postURLContentTask = new PostURLContentTask();
@@ -169,19 +157,18 @@ public class MainActivity extends AppCompatActivity {
         return returnMessage;
     }
 
-    public List<String> getEmployeesFromJSON(String json){
-        List<String> items = new ArrayList<>();
+    public String httpDeleteRequest(String json){
+        Log.d(TAG, "httpDeleteRequest: line 173 " + json);
+
+        String returnMessage = null;
+        DeleteURLContentTask deleteURLContentTask = new DeleteURLContentTask();
+        deleteURLContentTask.execute(SERVER, json);
         try {
-            JSONObject jsonObject = new JSONObject(json);
-            Iterator<String> iterator = jsonObject.keys();
-            while (iterator.hasNext()){
-                String key = iterator.next();
-                items.add(jsonObject.get(key).toString());
-            }
-        } catch (JSONException e) {
+            returnMessage = deleteURLContentTask.get();
+        } catch (InterruptedException | ExecutionException e) {
             e.printStackTrace();
         }
-        return items;
+        return returnMessage;
     }
 
     public void updateList(List<String> newList){
