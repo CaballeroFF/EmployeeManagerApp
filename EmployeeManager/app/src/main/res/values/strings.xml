@@ -2,4 +2,8 @@
     <string name="app_name">EmployeeManager</string>
     <string name="delete_hint">delete</string>
     <string name="edit_hint">edit</string>
+    <string name="name">Enter Employee Name :</string>
+    <string name="ID">Enter Employee ID</string>
+    <string name="department">Enter Employee Department</string>
+    <string name="title">Enter Employee Title</string>
 </resources>

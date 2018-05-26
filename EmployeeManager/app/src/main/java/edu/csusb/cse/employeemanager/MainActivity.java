@@ -26,16 +26,18 @@ import java.util.concurrent.ExecutionException;
 
 import edu.csusb.cse.employeemanager.adapters.RecyclerAdapter;
 import edu.csusb.cse.employeemanager.httprequests.GetURLContentTask;
+import edu.csusb.cse.employeemanager.httprequests.PostURLContentTask;
 
 public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = "DEBUG";
-    private static final String SERVER = "https://3abf132c.ngrok.io";
+    private static final String SERVER = "https://6379b90c.ngrok.io";
     private static String dialogText;
 
     final Context context = this;
 
     private RecyclerView recyclerView;
+    RecyclerAdapter adapter;
     private List<String> dataList = new ArrayList<>();
 
 
@@ -46,21 +48,20 @@ public class MainActivity extends AppCompatActivity {
 
         FloatingActionButton fab = findViewById(R.id.fab);
 
-        updateList(getEmployees(httpGet()));
+        updateList(getEmployeesFromJSON(httpGetRequest()));
         initRecyclerView();
 
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 showPrompt();
-                updateList(getEmployees(httpGet()));
             }
         });
     }
 
     public void initRecyclerView(){
         recyclerView = findViewById(R.id.recycler_view);
-        RecyclerAdapter adapter =  new RecyclerAdapter(MainActivity.this, dataList);
+        adapter =  new RecyclerAdapter(MainActivity.this, dataList);
         recyclerView.setAdapter(adapter);
         recyclerView.setLayoutManager(new LinearLayoutManager(MainActivity.this));
     }
@@ -70,39 +71,79 @@ public class MainActivity extends AppCompatActivity {
         LayoutInflater layoutInflater = LayoutInflater.from(context);
         View promptView = layoutInflater.inflate(R.layout.prompt, null);
 
-        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(context);
+        final EditText userInputName = promptView.findViewById(R.id.editTextDialogName);
+        final EditText userInputID = promptView.findViewById(R.id.editTextDialogID);
+        final EditText userInputDepartment = promptView.findViewById(R.id.editTextDialogDep);
+        final EditText userInputTitle = promptView.findViewById(R.id.editTextDialogTitle);
 
-        // set prompts.xml to alertdialog builder
-        alertDialogBuilder.setView(promptView);
+        final AlertDialog dialog = new AlertDialog.Builder(context)
+                .setView(promptView)
+                .setPositiveButton(android.R.string.ok, null) //Set to null. We override the onclick
+                .setNegativeButton(android.R.string.cancel, null)
+                .create();
 
-        final EditText userInput = promptView.findViewById(R.id.editTextDialogUserInput);
+        dialog.setOnShowListener(new DialogInterface.OnShowListener() {
 
-        //set dialog message
-        alertDialogBuilder.setCancelable(false)
-                .setPositiveButton("Ok",
-                        new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                dialogText = userInput.getText().toString();
-                                dataList.add(dialogText);
-                            }
-                        })
-                .setNegativeButton("Cancel",
-                        new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                dialog.cancel();
-                            }
-                        });
+            @Override
+            public void onShow(DialogInterface dialogInterface) {
 
-        //create alert dialog
-        AlertDialog alertDialog = alertDialogBuilder.create();
+                Button button = dialog.getButton(AlertDialog.BUTTON_POSITIVE);
+                button.setOnClickListener(new View.OnClickListener() {
 
+                    @Override
+                    public void onClick(View view) {
+                        if (userInputName.getText().toString().length() == 0){
+                            userInputName.setError("name required");
+                        }
+                        else if(userInputID.getText().toString().length() == 0){
+                            userInputID.setError("ID required");
+                        }
+                        else if(userInputDepartment.getText().toString().length() == 0){
+                            userInputDepartment.setError("Department required");
+                        }
+                        else if(userInputTitle.getText().toString().length() == 0){
+                            userInputTitle.setError("Title required");
+                        }
+                        else {
+
+                            dialogText = userInputName.getText().toString() + "," +
+                                    userInputID.getText().toString() + "," +
+                                    userInputDepartment.getText().toString() + "," +
+                                    userInputTitle.getText().toString();
+
+                            String returned = httpPOSTRequest(employeeToJSON(dialogText));
+                            Log.d(TAG, "onClick: " + returned);
+                            //refresh
+                            updateList(getEmployeesFromJSON(httpGetRequest()));
+                            adapter.notifyDataSetChanged();
+
+                            dialog.dismiss();
+                        }
+                    }
+                });
+            }
+        });
         //show alert dialog
-        alertDialog.show();
+        dialog.show();
     }
 
-    public String httpGet(){
+    public String employeeToJSON(String employee){
+
+        String[] employeeArray = employee.split(",");
+
+        JSONObject jsonEmployee = new JSONObject();
+        try {
+            jsonEmployee.put("name",employeeArray[0]);
+            jsonEmployee.put("id",employeeArray[1]);
+            jsonEmployee.put("department",employeeArray[2]);
+            jsonEmployee.put("title",employeeArray[3]);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return jsonEmployee.toString();
+    }
+
+    public String httpGetRequest(){
         String employees = null;
         GetURLContentTask getURLContentTask = new GetURLContentTask();
         getURLContentTask.execute(SERVER);
@@ -114,7 +155,21 @@ public class MainActivity extends AppCompatActivity {
         return employees;
     }
 
-    public List<String> getEmployees(String json){
+    public String httpPOSTRequest(String json){
+        Log.d(TAG, "httpPOSTRequest: " + json);
+
+        String returnMessage = null;
+        PostURLContentTask postURLContentTask = new PostURLContentTask();
+        postURLContentTask.execute(SERVER, json);
+        try {
+            returnMessage = postURLContentTask.get();
+        } catch (InterruptedException | ExecutionException e) {
+            e.printStackTrace();
+        }
+        return returnMessage;
+    }
+
+    public List<String> getEmployeesFromJSON(String json){
         List<String> items = new ArrayList<>();
         try {
             JSONObject jsonObject = new JSONObject(json);

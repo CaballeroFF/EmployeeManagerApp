@@ -10,15 +10,68 @@
         android:id="@+id/textView1"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Type Your Message : "
+        android:text="@string/name"
         android:textAppearance="?android:attr/textAppearanceLarge" />
 
     <EditText
-        android:id="@+id/editTextDialogUserInput"
+        android:hint="@string/name"
+        android:id="@+id/editTextDialogName"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" >
+        android:layout_height="wrap_content"
+        android:inputType="text">
 
         <requestFocus />
+
+    </EditText>
+
+    <TextView
+        android:layout_marginTop="16dp"
+        android:id="@+id/textView2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/ID"
+        android:textAppearance="?android:attr/textAppearanceLarge" />
+
+    <EditText
+        android:hint="@string/ID"
+        android:id="@+id/editTextDialogID"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:inputType="number">
+
+    </EditText>
+
+    <TextView
+        android:layout_marginTop="16dp"
+        android:id="@+id/textView3"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/department"
+        android:textAppearance="?android:attr/textAppearanceLarge" />
+
+    <EditText
+        android:hint="@string/department"
+        android:id="@+id/editTextDialogDep"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:inputType="text">
+
+    </EditText>
+
+    <TextView
+        android:layout_marginTop="16dp"
+        android:id="@+id/textView4"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/title"
+        android:textAppearance="?android:attr/textAppearanceLarge" />
+
+    <EditText
+        android:hint="@string/title"
+        android:id="@+id/editTextDialogTitle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:inputType="text">
 
     </EditText>
 
