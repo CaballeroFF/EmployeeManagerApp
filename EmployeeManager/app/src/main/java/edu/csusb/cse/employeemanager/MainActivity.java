@@ -28,6 +28,7 @@ import edu.csusb.cse.employeemanager.adapters.RecyclerAdapter;
 import edu.csusb.cse.employeemanager.helpers.StringParser;
 import edu.csusb.cse.employeemanager.httprequests.DeleteURLContentTask;
 import edu.csusb.cse.employeemanager.httprequests.GetURLContentTask;
+import edu.csusb.cse.employeemanager.httprequests.HttpRequests;
 import edu.csusb.cse.employeemanager.httprequests.PostURLContentTask;
 
 public class MainActivity extends AppCompatActivity {
@@ -35,6 +36,8 @@ public class MainActivity extends AppCompatActivity {
     private static final String TAG = "DEBUG";
     private static final String SERVER = "https://6379b90c.ngrok.io";
     private static String dialogText;
+
+    StringParser stringParser = new StringParser();
 
     final Context context = this;
 
@@ -50,15 +53,16 @@ public class MainActivity extends AppCompatActivity {
 
         FloatingActionButton fab = findViewById(R.id.fab);
 
-        updateList(new StringParser().getEmployeesFromJSON(httpGetRequest()));
+        stringParser.updateList(dataList, stringParser
+                .getEmployeesFromJSON(new HttpRequests()
+                        .httpGetRequest(SERVER)));
+
         initRecyclerView();
 
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 showPrompt();
-//                String test = httpDeleteRequest(employeeToJSON("Andy,001,CSE,Professor"));
-//                Log.d(TAG, "onClick: " + test);
             }
         });
     }
@@ -115,10 +119,14 @@ public class MainActivity extends AppCompatActivity {
                                     userInputDepartment.getText().toString() + "," +
                                     userInputTitle.getText().toString();
 
-                            String returned = httpPostRequest(new StringParser().employeeToJSON(dialogText));
-                            Log.d(TAG, "onClick: line 115 " + returned);
+                            String returned = new HttpRequests()
+                                    .httpPostRequest(stringParser
+                                    .employeeToJSON(dialogText), SERVER);
+                            Log.d(TAG, "onClick: line 120 " + returned);
                             //refresh
-                            updateList(new StringParser().getEmployeesFromJSON(httpGetRequest()));
+                            stringParser.updateList(dataList, stringParser
+                                    .getEmployeesFromJSON(new HttpRequests()
+                                    .httpGetRequest(SERVER)));
                             adapter.notifyDataSetChanged();
 
                             dialog.dismiss();
@@ -131,51 +139,4 @@ public class MainActivity extends AppCompatActivity {
         dialog.show();
     }
 
-    public String httpGetRequest(){
-        String employees = null;
-        GetURLContentTask getURLContentTask = new GetURLContentTask();
-        getURLContentTask.execute(SERVER);
-        try {
-            employees = getURLContentTask.get();
-        } catch (InterruptedException | ExecutionException e) {
-            e.printStackTrace();
-        }
-        return employees;
-    }
-
-    public String httpPostRequest(String json){
-        Log.d(TAG, "httpPOSTRequest: line 159 " + json);
-
-        String returnMessage = null;
-        PostURLContentTask postURLContentTask = new PostURLContentTask();
-        postURLContentTask.execute(SERVER, json);
-        try {
-            returnMessage = postURLContentTask.get();
-        } catch (InterruptedException | ExecutionException e) {
-            e.printStackTrace();
-        }
-        return returnMessage;
-    }
-
-    public String httpDeleteRequest(String json){
-        Log.d(TAG, "httpDeleteRequest: line 173 " + json);
-
-        String returnMessage = null;
-        DeleteURLContentTask deleteURLContentTask = new DeleteURLContentTask();
-        deleteURLContentTask.execute(SERVER, json);
-        try {
-            returnMessage = deleteURLContentTask.get();
-        } catch (InterruptedException | ExecutionException e) {
-            e.printStackTrace();
-        }
-        return returnMessage;
-    }
-
-    public void updateList(List<String> newList){
-        for (String s: newList) {
-            if (!dataList.contains(s)){
-                dataList.add(s);
-            }
-        }
-    }
 }

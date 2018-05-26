@@ -60,4 +60,19 @@ public class StringParser {
         }
         return jsonEmployee.toString();
     }
+
+    public void updateList(List<String> oldList, List<String> newList){
+        for (String s: newList) {
+            if (!oldList.contains(s)){
+                oldList.add(s);
+            }
+        }
+
+        List<String> temp = new ArrayList<>(oldList);
+        for (String s : temp){
+            if(!newList.contains(s)){
+                oldList.remove(s);
+            }
+        }
+    }
 }
