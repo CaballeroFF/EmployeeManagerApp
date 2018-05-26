@@ -113,7 +113,7 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.ViewHo
             @Override
             public void onClick(View view) {
                 showPrompt(position);
-                Snackbar.make(view, "clicked", Snackbar.LENGTH_SHORT).show();
+                //Snackbar.make(view, "edit", Snackbar.LENGTH_SHORT).show();
             }
         });
     }

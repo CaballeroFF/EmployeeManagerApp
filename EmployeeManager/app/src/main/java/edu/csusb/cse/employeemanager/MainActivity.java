@@ -2,6 +2,7 @@ package edu.csusb.cse.employeemanager;
 
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -10,6 +11,8 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.support.design.widget.Snackbar;
@@ -65,6 +68,43 @@ public class MainActivity extends AppCompatActivity {
                 showPrompt();
             }
         });
+    }
+
+    //side menu for the application
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.action_about:
+                LayoutInflater layoutInflater = LayoutInflater.from(context);
+                View aboutView = layoutInflater.inflate(R.layout.about_us, null);
+
+                final AlertDialog dialog = new AlertDialog.Builder(context)
+                        .setView(aboutView)
+                        .setPositiveButton(android.R.string.ok, null) //Set to null. We override the onclick
+                        .create();
+                dialog.show();
+                return true;
+            case R.id.action_search:
+                // About option clicked.
+                return true;
+            case R.id.action_exit:
+                Intent intent = new Intent(Intent.ACTION_MAIN);
+                intent.addCategory(Intent.CATEGORY_HOME);
+                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                startActivity(intent);
+                return true;
+            case R.id.action_settings:
+                // Settings option clicked.
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
     }
 
     public void initRecyclerView(){
