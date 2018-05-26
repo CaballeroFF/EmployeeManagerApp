@@ -37,7 +37,7 @@ import edu.csusb.cse.employeemanager.httprequests.PostURLContentTask;
 public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = "DEBUG";
-    private static final String SERVER = "http://10.0.2.2:5000";
+    private static String SERVER = "http://10.0.2.2:5000";
     private static String dialogText;
 
     StringParser stringParser = new StringParser();
@@ -47,7 +47,6 @@ public class MainActivity extends AppCompatActivity {
     private RecyclerView recyclerView;
     RecyclerAdapter adapter;
     private List<String> dataList = new ArrayList<>();
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -81,27 +80,57 @@ public class MainActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.action_about:
-                LayoutInflater layoutInflater = LayoutInflater.from(context);
-                View aboutView = layoutInflater.inflate(R.layout.about_us, null);
+                LayoutInflater aboutInflater = LayoutInflater.from(context);
+                View aboutView = aboutInflater.inflate(R.layout.about_us, null);
 
-                final AlertDialog dialog = new AlertDialog.Builder(context)
+                final AlertDialog aboutdialog = new AlertDialog.Builder(context)
                         .setView(aboutView)
                         .setPositiveButton(android.R.string.ok, null) //Set to null. We override the onclick
                         .create();
-                dialog.show();
+                aboutdialog.show();
                 return true;
             case R.id.action_search:
                 // About option clicked.
                 return true;
+
             case R.id.action_exit:
                 Intent intent = new Intent(Intent.ACTION_MAIN);
                 intent.addCategory(Intent.CATEGORY_HOME);
                 intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 startActivity(intent);
                 return true;
+
             case R.id.action_settings:
-                // Settings option clicked.
-                return true;
+                LayoutInflater settingInflator = LayoutInflater.from(context);
+                View settingsView = settingInflator.inflate(R.layout.settings_menu, null);
+
+                final EditText NewSeverAddr = settingsView.findViewById(R.id.new_sever_address);
+                final AlertDialog settingsdialog = new AlertDialog.Builder(context)
+                        .setView(settingsView)
+                        .setPositiveButton("Change", null)
+                        .setNegativeButton("Cancel",null)
+                        .create();
+                settingsdialog.show();
+                Button button = settingsdialog.getButton(AlertDialog.BUTTON_POSITIVE);
+                button.setOnClickListener(new View.OnClickListener() {
+
+                    @Override
+                    public void onClick(View view) {
+                        //update the sever address
+                        if (NewSeverAddr.getText().length() != 0) {
+                            SERVER = NewSeverAddr.getText().toString();
+                            //refresh
+                            stringParser.updateList(dataList, stringParser
+                                    .getEmployeesFromJSON(new HttpRequests()
+                                            .httpGetRequest(SERVER)));
+                            adapter.notifyDataSetChanged();
+                        }
+                        else {
+                            NewSeverAddr.setError("Server address required");
+                        }
+                    }
+                });
+
             default:
                 return super.onOptionsItemSelected(item);
         }
